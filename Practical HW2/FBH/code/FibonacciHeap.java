@@ -115,6 +115,10 @@ private void Consolidating() {
     HeapNode x = Min.next;
     int numTree=1;
     while(!x.equals(Min) ) {
+    	if(x.mark==1) {
+    		x.mark=0;
+    		numOfMarked--;
+    	}
     	x=x.next;
     	numTree++;
     }
@@ -192,7 +196,7 @@ private void link(HeapNode x, HeapNode y) {
     */
     public HeapNode findMin()
     {
-    	return Min;// should be replaced by student code
+    	return Min;
     } 
     
    /**
@@ -203,7 +207,24 @@ private void link(HeapNode x, HeapNode y) {
     */
     public void meld (FibonacciHeap heap2)
     {
-    	  return; // should be replaced by student code   		
+    	if(this.isEmpty() ) {
+    		this.Min=heap2.Min; 
+    		size=heap2.size;
+    		numOfTree=heap2.numOfTree;
+    		numOfMarked=heap2.numOfMarked;
+    		return;
+    		}
+    	if(heap2.isEmpty()) 
+    		return;
+    	size=size+heap2.size;
+		numOfTree=numOfTree+heap2.numOfTree;
+		numOfMarked=numOfMarked+heap2.numOfMarked;
+    	HeapNode temp=heap2.Min.prev;
+    	HeapNode temp2=this.Min.next;
+    	heap2.Min.prev=heap2.Min;
+    	this.Min.next=heap2.Min;
+    	temp.prev=temp2;
+    	temp2.next=temp;
     }
 
    /**
@@ -214,7 +235,7 @@ private void link(HeapNode x, HeapNode y) {
     */
     public int size()
     {
-    	return size ; // should be replaced by student code
+    	return size ; 
     }
     	
     /**
@@ -257,10 +278,58 @@ private void link(HeapNode x, HeapNode y) {
     */
     public void decreaseKey(HeapNode x, int delta)
     {    
+    	if( delta < 0 || x==null ) {
+            return;
+        }
+    	x.key = x.key - delta;
+    	if(x.equals(Min))
+    		return;
+        HeapNode y = x.Parent;
+        if(y==null) {
+        	if(x.key<Min.key)
+        		Min=x;
+        	return;
+        }
+        if( x.key < y.key) {
+            cascading_cut(x,y);
+            if(x.key < Min.key) {
+                Min = x;
+            }
+        }
 
     }
 
-   /**
+   private void cascading_cut(HeapNode x, HeapNode y) {
+		cut(x,y);
+		if(y.Parent!=null) {
+			if(y.mark==0) {
+				y.mark=1;
+				numOfMarked++;
+				return;
+				}
+			cascading_cut(y,y.Parent);
+		}
+}
+
+private void cut(HeapNode x, HeapNode y) {
+	TotalCut++;
+	numOfTree++;
+	x.Parent=null;
+	if(x.mark==1) numOfMarked--;
+	x.mark=0;
+	y.rank=y.rank-1;
+	if(x.next.equals(x))
+		y.child=null;
+	else {
+		y.child=x.next;
+		x.prev.next=x.next;
+		x.next.prev=x.prev;
+	}
+	Min.next.prev=x;
+	Min.next=x;
+}
+
+/**
     * public int potential() 
     *
     * This function returns the current potential of the heap, which is:
