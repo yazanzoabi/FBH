@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 /**
  * FibonacciHeap
  *
@@ -48,8 +50,7 @@ public class FibonacciHeap
             }
             return newNode;
         }
-        Min= newNode;
-        this.size++;
+        else Min= newNode;
         return newNode;
     }
 
@@ -61,31 +62,35 @@ public class FibonacciHeap
     */
     public void deleteMin()
     {
-    	numOfTree--;
     	if (size==1) {
     		size=0;
     		Min=null;
+        	numOfTree=0;
     	}
     	if(Min==null)
     		return;
-        int  numChilds = Min.rank;
-        HeapNode Child =Min.child;
-        HeapNode temp=Min.next;
-        while(numChilds != 0) {
-        	numOfTree++;
-        	Child.mark=0;
-//        	temp = Child.next;
-//        	Child.prev = Min;
-//            Child.next = Min.next;
-//            Min.next = Child;
-//        	/**
-//        	 * בדיקה אם יש צורך להפוך הקווים כמו בהינומי
-//        	 *             
-//        	 */
-        	}
-        Min.prev.next = Min.next;
-        Min.next.prev = Min.prev;
-        size--;
+    	if(Min.child!=null) {
+    		numOfTree=numOfTree+Min.rank;
+    		HeapNode firstChild =Min.child;
+    		HeapNode lastChild =Min.child.prev;
+    		if(Min.next.equals(Min)) {
+    			Min=firstChild;
+    		}
+    		else {
+    			Min.prev.next=firstChild;
+    			firstChild.prev=Min.prev;
+    			Min.next.prev=lastChild;
+    			lastChild.next=Min.next;
+    			Min=firstChild;
+    			size--;
+    		}
+        }
+    	else {
+    		Min.prev.next=Min.next;
+    		Min.next.prev=Min.prev;
+    		Min=Min.next;
+    		size--;
+    	}
         Consolidating();
         updateMin();
     }
@@ -102,55 +107,80 @@ public class FibonacciHeap
 private void Consolidating() {
 	if (Min==null)
 		return;
-	HeapNode[] array = new HeapNode[43];
+	HeapNode[] array = new HeapNode[numOfTree];
     for( int i = 0; i < array.length; i++ ) {
         array[i] = null;
     }
     
-    int  numRoots = 1;
-    HeapNode temp = Min.next;
-    while(!temp.equals(Min) ) {
-    	numRoots++;
-    	temp = temp.next;
-          }
-    while( numRoots > 0 ) {
-        int rank = temp.rank;
-        HeapNode next = temp.next;
+    HeapNode x = Min.next;
+    int numTree=1;
+    while(!x.equals(Min) ) {
+    	x=x.next;
+    	numTree++;
+    }
+    while(numTree>0) {
+        int rank = x.rank;
+        HeapNode next = x.next;
         while( array[rank] != null ) {
         	HeapNode y = array[rank];
-            link( y, temp );
+        	if(y.key<x.key) {
+        		HeapNode temp=x;
+        		x=y;
+        		y=x;
+        	}
+            link( y, x );
             array[rank] = null;
             rank++;
         }
-        array[rank] = temp;
-        temp = next;
-        numRoots--;
+        array[rank] = x;
+        x = next;
+        numTree--;
     }
-    temp=null;
+    numOfTree=0;
+    x=null;
     Min=null;
     for( int i = 0; i < array.length; i++ ) {
         if( array[i] != null ) {
+        	numOfTree++;
         	if(Min!=null) {
-        		temp.next=array[i];
-        		array[i].prev=temp;
+        		x.next=array[i];
+        		array[i].prev=x;
         		array[i].next=Min;
         		Min.prev=array[i];
-        		temp=array[i];
+        		x=array[i];
         }
             else {
                 Min = array[i];
                 Min.next=Min;
                 Min.prev=Min;
-                temp=Min;
+                x=Min;
             }
         }
     }
-
-	
 }
 
-private void link(HeapNode y, HeapNode temp) {
-	// TODO Auto-generated method stub
+private void link(HeapNode x, HeapNode y) {
+	TotalLinks++;
+	if(x.key>y.key) {
+		HeapNode temp=x;
+		x=y;
+		y=temp;
+	}
+	y.prev.next=y.next;
+	y.next.prev=y.prev;
+	y.Parent=x;
+	if(x.child==null) {
+		y.next=y;
+		y.prev=y;
+	}
+	else {
+		y.next=x.child.next;
+		x.child.next=y;
+		y.prev=x.child;
+		y.next.prev=y;
+	}
+	x.child=y;
+	x.rank++;
 	
 }
 
@@ -195,14 +225,14 @@ private void link(HeapNode y, HeapNode temp) {
     */
     public int[] countersRep()
     {
-	int[] arr = new int[42];
-	HeapNode temp=Min.next;
-	arr[Min.rank]++;
-	while(temp.equals(Min)) {
-		arr[temp.rank]++;
-		temp=temp.next;
-	}
-	return arr;
+    	int[] arr = new int[42];
+    	HeapNode temp=Min.next;
+    	arr[Min.rank]++;
+    	while(!temp.equals(Min)) {
+    		arr[temp.rank]++;
+    		temp=temp.next;
+    	}
+    	return arr;
     }
 	
    /**
@@ -213,7 +243,10 @@ private void link(HeapNode y, HeapNode temp) {
     */
     public void delete(HeapNode x) 
     {    
-    	return; // should be replaced by student code
+    	if(x==null)
+    		return;
+        decreaseKey(x,x.key-Min.key+1);
+        this.deleteMin();
     }
 
    /**
@@ -224,7 +257,7 @@ private void link(HeapNode y, HeapNode temp) {
     */
     public void decreaseKey(HeapNode x, int delta)
     {    
-    	return; // should be replaced by student code
+
     }
 
    /**
@@ -305,8 +338,6 @@ private void link(HeapNode y, HeapNode temp) {
 	public boolean equals(HeapNode t) {
 		return t.key==key;
 	}
-
-
-  	
     }
+
 }
