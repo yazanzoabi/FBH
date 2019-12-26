@@ -5,6 +5,13 @@
  */
 public class FibonacciHeap
 {
+	private HeapNode Min=null; 
+	private int size=0;
+	private int numOfTree=0;
+	private int numOfMarked=0;
+	private static int TotalCut=0; 
+	private static int TotalLinks=0;
+
 
    /**
     * public boolean isEmpty()
@@ -17,7 +24,7 @@ public class FibonacciHeap
     */
     public boolean isEmpty()
     {
-    	return false; // should be replaced by student code
+    	return Min==null;
     }
 		
    /**
@@ -26,8 +33,24 @@ public class FibonacciHeap
     * Creates a node (of type HeapNode) which contains the given key, and inserts it into the heap. 
     */
     public HeapNode insert(int key)
-    {    
-    	return new HeapNode(key); // should be replaced by student code
+    {   
+    	numOfTree++;
+    	size++;
+    	HeapNode newNode=new HeapNode(key);
+        if(Min != null ) {
+        	newNode.prev = Min;
+        	newNode.next = Min.next;
+            Min.next = newNode;
+            newNode.next.prev = newNode;
+
+            if( key < Min.key ) {
+                Min = newNode;
+            }
+            return newNode;
+        }
+        Min= newNode;
+        this.size++;
+        return newNode;
     }
 
    /**
@@ -38,11 +61,100 @@ public class FibonacciHeap
     */
     public void deleteMin()
     {
-     	return; // should be replaced by student code
-     	
+    	numOfTree--;
+    	if (size==1) {
+    		size=0;
+    		Min=null;
+    	}
+    	if(Min==null)
+    		return;
+        int  numChilds = Min.rank;
+        HeapNode Child =Min.child;
+        HeapNode temp=Min.next;
+        while(numChilds != 0) {
+        	numOfTree++;
+        	Child.mark=0;
+//        	temp = Child.next;
+//        	Child.prev = Min;
+//            Child.next = Min.next;
+//            Min.next = Child;
+//        	/**
+//        	 * בדיקה אם יש צורך להפוך הקווים כמו בהינומי
+//        	 *             
+//        	 */
+        	}
+        Min.prev.next = Min.next;
+        Min.next.prev = Min.prev;
+        size--;
+        Consolidating();
+        updateMin();
     }
 
-   /**
+   private void updateMin() {
+	HeapNode min=Min,temp=Min.next;
+	while(!temp.equals(Min)) {
+		if(min.key>temp.key)
+			min=temp;
+		temp=temp.next;
+		}
+}
+
+private void Consolidating() {
+	if (Min==null)
+		return;
+	HeapNode[] array = new HeapNode[43];
+    for( int i = 0; i < array.length; i++ ) {
+        array[i] = null;
+    }
+    
+    int  numRoots = 1;
+    HeapNode temp = Min.next;
+    while(!temp.equals(Min) ) {
+    	numRoots++;
+    	temp = temp.next;
+          }
+    while( numRoots > 0 ) {
+        int rank = temp.rank;
+        HeapNode next = temp.next;
+        while( array[rank] != null ) {
+        	HeapNode y = array[rank];
+            link( y, temp );
+            array[rank] = null;
+            rank++;
+        }
+        array[rank] = temp;
+        temp = next;
+        numRoots--;
+    }
+    temp=null;
+    Min=null;
+    for( int i = 0; i < array.length; i++ ) {
+        if( array[i] != null ) {
+        	if(Min!=null) {
+        		temp.next=array[i];
+        		array[i].prev=temp;
+        		array[i].next=Min;
+        		Min.prev=array[i];
+        		temp=array[i];
+        }
+            else {
+                Min = array[i];
+                Min.next=Min;
+                Min.prev=Min;
+                temp=Min;
+            }
+        }
+    }
+
+	
+}
+
+private void link(HeapNode y, HeapNode temp) {
+	// TODO Auto-generated method stub
+	
+}
+
+/**
     * public HeapNode findMin()
     *
     * Return the node of the heap whose key is minimal. 
@@ -50,7 +162,7 @@ public class FibonacciHeap
     */
     public HeapNode findMin()
     {
-    	return new HeapNode(0);// should be replaced by student code
+    	return Min;// should be replaced by student code
     } 
     
    /**
@@ -72,7 +184,7 @@ public class FibonacciHeap
     */
     public int size()
     {
-    	return 0; // should be replaced by student code
+    	return size ; // should be replaced by student code
     }
     	
     /**
@@ -84,7 +196,13 @@ public class FibonacciHeap
     public int[] countersRep()
     {
 	int[] arr = new int[42];
-        return arr; //	 to be replaced by student code
+	HeapNode temp=Min.next;
+	arr[Min.rank]++;
+	while(temp.equals(Min)) {
+		arr[temp.rank]++;
+		temp=temp.next;
+	}
+	return arr;
     }
 	
    /**
@@ -118,7 +236,7 @@ public class FibonacciHeap
     */
     public int potential() 
     {    
-    	return 0; // should be replaced by student code
+    	return numOfTree+ numOfMarked*2; // should be replaced by student code
     }
 
    /**
@@ -131,7 +249,7 @@ public class FibonacciHeap
     */
     public static int totalLinks()
     {    
-    	return 0; // should be replaced by student code
+    	return TotalLinks;
     }
 
    /**
@@ -142,7 +260,7 @@ public class FibonacciHeap
     */
     public static int totalCuts()
     {    
-    	return 0; // should be replaced by student code
+    	return TotalCut; // should be replaced by student code
     }
 
      /**
@@ -167,15 +285,28 @@ public class FibonacciHeap
     */
     public class HeapNode{
 
+    
 	public int key;
+	private int rank;
+	private int mark;
+	private HeapNode child;
+	private HeapNode next;
+	private HeapNode prev;
+	private HeapNode Parent;
+	
+	public HeapNode(int key) {
+		this.key = key;
+		this.prev=this;
+		this.next=this;
+	}
+	public int getKey() {
+		return this.key;
+	}
+	public boolean equals(HeapNode t) {
+		return t.key==key;
+	}
 
-  	public HeapNode(int key) {
-	    this.key = key;
-      }
 
-  	public int getKey() {
-	    return this.key;
-      }
-
+  	
     }
 }
