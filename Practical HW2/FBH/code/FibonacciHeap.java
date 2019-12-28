@@ -317,8 +317,7 @@ private void link(HeapNode x, HeapNode y) {
 	   x.Parent=null;
 	   if(x.mark==1) numOfMarked--;
 	   x.mark=0;
-	   if(y.child.equals(x))
-		   y.rank=y.rank-1;
+	   y.rank=y.rank-1;
 	   if(x.next.equals(x))
 		   y.child=null;
 	   else {
