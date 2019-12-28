@@ -414,6 +414,71 @@ private void link(HeapNode x, HeapNode y) {
 		return t.key==key;
 	}
     }
+    public static void main(String[] arg) {
+    	FibonacciHeap.HeapNode [] j=new HeapNode[5];
+    	int r=1;
+    	FibonacciHeap.HeapNode y=null;
+    	for(int j1=0;j1<5;j1++) {
+    		j[j1]=null;
+    	}
+    	FibonacciHeap d= new FibonacciHeap();
+    	for(int i=1000;i>0;i--) {
+    		for(int j1=0;j1<5;j1++) {
+    			y=d.insert(i);
+    			i--;
+    			j[j1]=y;
+    			
+    		}
+    		System.out.println("min is:"+i);
+    		if(d.findMin().key!=i+1) {
+    			System.out.println("notTrue1");
+    			break;}
+    		d.decreaseKey(d.Min, 5);
+    		System.out.println(d.Min.key);
+    		if(d.findMin().key!=i-4) {
+    			System.out.println("notTrue2");
+    			break;}
+    		d.deleteMin();
+    		if(d.findMin().key!=i+2) {
+    			System.out.println("notTrue3");
+    			break;}
+//    		System.out.println(j[3].key);
+    		d.decreaseKey(j[3], 10);
+//    		System.out.println(j[3].key);
+    		if(d.findMin().key!=i-8) {
+    			System.out.println("notTrue4");
+    			break;}
+    		d.deleteMin();
+    		System.out.println(d.Min.key);
+    		if(d.findMin().key!=i+3) {
+    			System.out.println("notTrue5");
+    			break;}
+    		d.delete(j[1]);
+    		System.out.println(d.size);
+    		if(d.size!=2*r) {
+    			System.out.println("notTrue6");
+    			break;
+    		}
+    		r++;
+    	}
+    	System.out.println("welldone");
 
+	}
+//    public void print(HeapNode y) {
+//    	System.out.println(y.key);
+//    	System.out.println();
+//    	System.out.println();
+//    	while(y.child!=null) {
+//    		HeapNode child =y.child;
+//    		System.out.print(child.key);
+//			System.out.print("     ");
+//			child=child.next;
+//    		while(child.equals(y.child)) {
+//    			System.out.print(child.key);
+//    			System.out.print("     ");
+//    		}
+//    		y=y.child;
+//    	}
+//    }
 
 }
