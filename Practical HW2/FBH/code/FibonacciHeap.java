@@ -29,16 +29,38 @@ public class FibonacciHeap
     	return Min==null;
     }
 		
-   /**
-    * public HeapNode insert(int key)
-    *
-    * Creates a node (of type HeapNode) which contains the given key, and inserts it into the heap. 
-    */
+
+    public HeapNode insert(int key, HeapNode godFather) {
+    	numOfTree++;
+    	size++;
+    	HeapNode newNode = new HeapNode(key, godFather);
+        if(Min != null ) {
+        	newNode.prev = Min;
+        	newNode.next = Min.next;
+            Min.next = newNode;
+            newNode.next.prev = newNode;
+
+            if( key < Min.key ) {
+                Min = newNode;
+            }
+            return newNode;
+        }
+        else Min= newNode;
+        return newNode;
+    }
+    
+    /**
+     * public HeapNode insert(int key)
+     *
+     * Creates a node (of type HeapNode) which contains the given key, and inserts it into the heap. 
+     */
+    
+    
     public HeapNode insert(int key)
     {   
     	numOfTree++;
     	size++;
-    	HeapNode newNode=new HeapNode(key);
+    	HeapNode newNode = new HeapNode(key);
         if(Min != null ) {
         	newNode.prev = Min;
         	newNode.next = Min.next;
@@ -379,8 +401,38 @@ private void link(HeapNode x, HeapNode y) {
     */
     public static int[] kMin(FibonacciHeap H, int k)
     {    
-        int[] arr = new int[42];
-        return arr; // should be replaced by student code
+
+        int[] arr = new int[k];
+        
+        HeapNode xXHEAPNODEXx = H.Min;
+        HeapNode xXSONXx;
+        FibonacciHeap xXMONSTERXx = new FibonacciHeap();
+        
+        arr[0] = H.Min.key;
+        xXSONXx = H.Min.child;
+        if(xXHEAPNODEXx.child != null) {
+            xXMONSTERXx.insert(xXSONXx.key, xXSONXx);
+            while(xXSONXx.next != xXSONXx) {
+            	xXSONXx = xXSONXx.next;
+            	xXMONSTERXx.insert(xXSONXx.key, xXSONXx);
+            }
+        }
+
+        for (int i = 1; i<=k; i++) {
+        	HeapNode xXHEAPNODEXx1 = xXMONSTERXx.Min.godFather;
+        	arr[i] = xXHEAPNODEXx1.key;
+        	xXMONSTERXx.deleteMin();
+        	if(xXHEAPNODEXx1.child != null) {
+        		xXSONXx = xXHEAPNODEXx1.child;
+                xXMONSTERXx.insert(xXSONXx.key, xXSONXx);
+                while(xXSONXx.next != xXSONXx) {
+                	xXSONXx = xXSONXx.next;
+                	xXMONSTERXx.insert(xXSONXx.key, xXSONXx);
+                }        		
+        	}
+        }
+        
+        return arr;
     }
     
    /**
@@ -401,11 +453,16 @@ private void link(HeapNode x, HeapNode y) {
 	private HeapNode next;
 	private HeapNode prev;
 	private HeapNode Parent;
+	private HeapNode godFather;
 	
 	public HeapNode(int key) {
 		this.key = key;
 		this.prev=this;
 		this.next=this;
+	}
+	public HeapNode(int key, HeapNode godFather) {
+		this(key);
+		this.godFather = godFather;
 	}
 	public int getKey() {
 		return this.key;
