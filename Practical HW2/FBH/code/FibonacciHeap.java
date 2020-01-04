@@ -409,8 +409,8 @@ private void link(HeapNode x, HeapNode y) {
         FibonacciHeap xXMONSTERXx = new FibonacciHeap();
         
         arr[0] = H.Min.key;
-        xXSONXx = H.Min.child;
         if(xXHEAPNODEXx.child != null) {
+            xXSONXx = H.Min.child;
             xXMONSTERXx.insert(xXSONXx.key, xXSONXx);
             while(xXSONXx.next != xXSONXx) {
             	xXSONXx = xXSONXx.next;
