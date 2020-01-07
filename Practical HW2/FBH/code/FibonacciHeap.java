@@ -7,7 +7,8 @@ import java.util.Arrays;
  */
 public class FibonacciHeap
 {
-	private HeapNode Min=null; 
+	private HeapNode Min=null;
+	private HeapNode First=null;
 	private int size=0;
 	private int numOfTree=0;
 	private int numOfMarked=0;
@@ -29,23 +30,55 @@ public class FibonacciHeap
     	return Min==null;
     }
 		
-
-    public HeapNode insert(int key, HeapNode godFather) {
+   /**
+    * public HeapNode insert(int key)
+    *
+    * Creates a node (of type HeapNode) which contains the given key, and inserts it into the heap. 
+    */
+    public HeapNode insert(int key)
+    {   
     	numOfTree++;
     	size++;
-    	HeapNode newNode = new HeapNode(key, godFather);
-        if(Min != null ) {
-        	newNode.prev = Min;
-        	newNode.next = Min.next;
-            Min.next = newNode;
-            newNode.next.prev = newNode;
+    	HeapNode newNode=new HeapNode(key);
+        if(First != null ) {
+        	newNode.next = First;
+        	newNode.prev = First.prev;
+            First.prev = newNode;
+            newNode.prev.next = newNode;
 
             if( key < Min.key ) {
                 Min = newNode;
             }
             return newNode;
         }
-        else Min= newNode;
+        else {
+        	Min= newNode;
+        	First= newNode;
+        }
+        return newNode;
+    }
+    
+    
+    public HeapNode insert(int key, HeapNode godFather) {
+    	numOfTree++;
+    	size++;
+    	HeapNode newNode = new HeapNode(key, godFather);
+        if(Min != null ) {
+        	newNode.next = First;
+        	newNode.prev = First.prev;
+            First.prev = newNode;
+            newNode.prev.next = newNode;
+
+            
+            if( key < Min.key ) {
+                Min = newNode;
+            }
+            return newNode;
+        }
+        else {
+        	Min= newNode;
+        	First= newNode;
+        }
         return newNode;
     }
     
@@ -55,27 +88,6 @@ public class FibonacciHeap
      * Creates a node (of type HeapNode) which contains the given key, and inserts it into the heap. 
      */
     
-    
-    public HeapNode insert(int key)
-    {   
-    	numOfTree++;
-    	size++;
-    	HeapNode newNode = new HeapNode(key);
-        if(Min != null ) {
-        	newNode.prev = Min;
-        	newNode.next = Min.next;
-            Min.next = newNode;
-            newNode.next.prev = newNode;
-
-            if( key < Min.key ) {
-                Min = newNode;
-            }
-            return newNode;
-        }
-        else Min= newNode;
-        return newNode;
-    }
-
    /**
     * public void deleteMin()
     *
@@ -87,132 +99,131 @@ public class FibonacciHeap
     	if(Min==null)
     		return;
     	size--;
+    	numOfTree--;
+    	
     	if (size==0) {
     		Min=null;
-        	numOfTree=0;
+    		First=null;
         	return;
     	}
     	
     	if(Min.child!=null) {
-    		numOfTree=numOfTree+Min.rank-1;
-    		HeapNode firstChild =Min.child;
-    		HeapNode lastChild =Min.child.prev;
-    		if(Min.next.equals(Min)) {
-    			Min=firstChild;
-    		}
-    		else {
+    		HeapNode firstChild = Min.child;
+    		HeapNode temp = firstChild;
+    		do {
+            	numOfTree++;
+    			if (temp.mark==1) {
+    				temp.mark=0;
+    				numOfMarked--;
+    			}
+    			temp.Parent=null;			
+    			temp=temp.next;
+    			
+    			}
+    		while(!temp.equals(firstChild)); 
+    		First=firstChild;
+    		temp=temp.prev;
+    		if(!Min.next.equals(Min)) {
     			Min.prev.next=firstChild;
     			firstChild.prev=Min.prev;
-    			Min.next.prev=lastChild;
-    			lastChild.next=Min.next;
-    			Min=firstChild;
-    		}
-        }
+    			Min.next.prev=temp;
+    			temp.next=Min.next;
+    		} 
+    	}
+    	
     	else {
     		Min.prev.next=Min.next;
     		Min.next.prev=Min.prev;
-    		Min=Min.next;
-    		numOfTree--;
+    		First = Min.next;
     	}
+    	
         Consolidating();
         updateMin();
     }
 
    private void updateMin() {
-	HeapNode min=Min,temp=Min.next;
-	while(!temp.equals(Min)) {
-		if(min.key>temp.key)
-			min=temp;
-		temp=temp.next;
+	   HeapNode temp=First.next;
+	   Min=First;
+	   while(!temp.equals(First)) {
+		   if(Min.key>temp.key)
+			   Min=temp;
+		   temp=temp.next;
 		}
-	Min=min;
-}
+   }
 
-private void Consolidating() {
-	if (Min==null)
-		return;
-	HeapNode[] array = new HeapNode[size+1];
-    for( int i = 0; i < array.length; i++ ) {
-        array[i] = null;
-    }
+   private void Consolidating() {
+	   HeapNode[] array = new HeapNode[size+1];    
+	   HeapNode x = First.next;
+	   int numTree=numOfTree;
     
-    HeapNode x = Min.next;
-    int numTree=1;
-    while(!x.equals(Min) ) {
-    	x.Parent=null;
-    	if(x.mark==1) {
-    		x.mark=0;
-    		numOfMarked--;
-    	}
-    	x=x.next;
-    	numTree++;
-    }
-    while(numTree>0) {
-        int rank = x.rank;
-        HeapNode next = x.next;
-        while( array[rank] != null ) {
-        	HeapNode y = array[rank];
-        	if(y.key<x.key) {
-        		HeapNode temp=x;
-        		x=y;
-        		y=temp;
-        	}
-            link( y, x );
-            array[rank] = null;
-            rank++;
-        }
-        array[rank] = x;
-        x = next;
-        numTree--;
-    }
-    numOfTree=0;
-    x=null;
-    Min=null;
-    for( int i = 0; i < array.length; i++ ) {
-        if( array[i] != null ) {
-        	numOfTree++;
-        	if(Min!=null) {
-        		Min.next.prev=array[i];
-        		array[i].next=Min.next;
-        		Min.next=array[i];
-        		array[i].prev=Min;
-        	}
-            else {
-                Min = array[i];
-                Min.next=Min;
-                Min.prev=Min;
-                x=Min;
-            }
-        }
-    }
-}
-
-private void link(HeapNode x, HeapNode y) {
-	TotalLinks++;
-	if(x.key>y.key) {
-		HeapNode temp=x;
-		x=y;
-		y=temp;
-	}
-	y.prev.next=y.next;
-	y.next.prev=y.prev;
-	y.Parent=x;
-	if(x.child==null) {
-		y.next=y;
-		y.prev=y;
-	}
-	else {
-		y.next=x.child.next;
-		x.child.next=y;
-		y.prev=x.child;
-		y.next.prev=y;
-	}
-	x.child=y;
-	x.rank++;
+	   while(numTree>0) {
+		   int rank = x.rank;
+		   HeapNode next = x.next;
+		   while( array[rank] != null ) {
+			   HeapNode y = array[rank];
+			   if(y.key<x.key) {
+				   HeapNode temp=x;
+				   x=y;
+				   y=temp;
+			   }
+			   link( y, x );
+			   array[rank] = null;
+			   rank++;
+		   }
+		   array[rank] = x;
+		   x = next;
+		   numTree--;
+	   }
+    
+	   numOfTree=0;
+	   First=null;
+	   x=null;
+    
+	   for( int i = 0; i < array.length; i++ ) {
+		   if( array[i] != null ) {
+			   numOfTree++;
+			   if(First!=null) {	
+				   array[i].next=x.next;
+				   x.next=array[i];
+				   array[i].prev=x;
+				   x=array[i];
+			   }
+			   else {
+				   First = array[i];
+				   First.next=First;
+				   First.prev=First;
+				   x=First;
+			   }
+		   }
+	   }
+	   First.prev=x;
+   }
+   /**
+    *    x.key<y.key  
+    */
+   private void link(HeapNode y, HeapNode x) {
+	   TotalLinks++;
+	   	y.prev.next=y.next;
+		y.next.prev=y.prev;
+		y.Parent=x;
+		
+		if(x.child==null) {
+			y.next=y;
+			y.prev=y;
+		}
+		else {
+			y.next=x.child.next;
+			x.child.next=y;
+			y.prev=x.child;
+			y.next.prev=y;
+		}
+		
+		x.child=y;
+		x.rank++;
 	
-}
+   }
 
-/**
+   /**
     * public HeapNode findMin()
     *
     * Return the node of the heap whose key is minimal. 
@@ -231,24 +242,31 @@ private void link(HeapNode x, HeapNode y) {
     */
     public void meld (FibonacciHeap heap2)
     {
+    	if(heap2.isEmpty()) 
+    		return;
+    	
     	if(this.isEmpty() ) {
+    		this.First=heap2.First;
     		this.Min=heap2.Min; 
     		size=heap2.size;
     		numOfTree=heap2.numOfTree;
     		numOfMarked=heap2.numOfMarked;
     		return;
     		}
-    	if(heap2.isEmpty()) 
-    		return;
+    	
     	size=size+heap2.size;
 		numOfTree=numOfTree+heap2.numOfTree;
 		numOfMarked=numOfMarked+heap2.numOfMarked;
-    	HeapNode temp=heap2.Min.prev;
-    	HeapNode temp2=this.Min.next;
-    	heap2.Min.prev=heap2.Min;
-    	this.Min.next=heap2.Min;
-    	temp.prev=temp2;
-    	temp2.next=temp;
+    	HeapNode temp1=heap2.First.prev;
+    	HeapNode temp2=this.First.prev;
+    	heap2.First.prev=temp2;
+    	this.First.prev=temp1;
+    	temp1.next=this.First;
+    	temp2.next=heap2.First;
+    	
+    	//update Min
+    	if(heap2.Min.key<Min.key) 
+    		Min=heap2.Min;
     }
 
    /**
@@ -270,7 +288,7 @@ private void link(HeapNode x, HeapNode y) {
     */
     public int[] countersRep()
     {
-    	int[] arr = new int[42];
+    	int[] arr = new int[size];
     	if(Min==null) return arr;
     	HeapNode temp=Min.next;
     	arr[Min.rank]++;
@@ -293,6 +311,7 @@ private void link(HeapNode x, HeapNode y) {
     		return;
         decreaseKey(x,x.key-Min.key+1);
         this.deleteMin();
+        
     }
 
    /**
@@ -303,61 +322,72 @@ private void link(HeapNode x, HeapNode y) {
     */
     public void decreaseKey(HeapNode x, int delta)
     {    
-    	if( delta < 0 || x==null ) {
+    	if( delta < 0 || x==null ) 
             return;
-        }
+        
     	x.key = x.key - delta;
+    	
     	if(x.equals(Min))
     		return;
+    	
         HeapNode y = x.Parent;
         if(y==null) {
         	if(x.key<Min.key)
         		Min=x;
         	return;
         }
-        if( x.key < y.key) {
+        
+        if( x.key < y.key) 
             cascading_cut(x,y);
-                    }
-
     }
 
-   private void cascading_cut(HeapNode x, HeapNode y) {
-		cut(x,y);
-		if(y.Parent!=null) {
-			if(y.mark==0) {
-				y.mark=1;
-				numOfMarked++;
-				return;
-				}
-			cascading_cut(y,y.Parent);
-		}
-}
+   private void cascading_cut(HeapNode x, HeapNode y)
+   {	
+	   cut(x,y);
+	   if(y.Parent!=null) {
+		   if(y.mark==0) {
+			y.mark=1;
+			numOfMarked++;
+			return;
+		   }
+		   
+		   cascading_cut(y,y.Parent);
+	   }
+	}
 
-   private void cut(HeapNode x, HeapNode y) {
+   private void cut(HeapNode x, HeapNode y) 
+   {
 	   TotalCut++;
 	   numOfTree++;
 	   x.Parent=null;
-	   if(x.mark==1) numOfMarked--;
-	   x.mark=0;
+	   
+	   if(x.mark==1) {
+		   numOfMarked--;
+		   x.mark=0;
+	   }
+	   
 	   y.rank=y.rank-1;
 	   if(x.next.equals(x))
 		   y.child=null;
+	   
 	   else {
 		   y.child=x.next;
 		   x.prev.next=x.next;
 		   x.next.prev=x.prev;
 	   }
+	   
 	   Min.next.prev=x;
 	   x.next=Min.next;
 	   Min.next=x;
 	   x.prev=Min;
+	   
 	   if(x.key < Min.key) {
 		   Min = x;
-    }
+	   }
 
-}
+   }
 
-/**
+   /**
     * public int potential() 
     *
     * This function returns the current potential of the heap, which is:
@@ -390,7 +420,7 @@ private void link(HeapNode x, HeapNode y) {
     */
     public static int totalCuts()
     {    
-    	return TotalCut; // should be replaced by student code
+    	return TotalCut; 
     }
 
      /**
@@ -406,34 +436,39 @@ private void link(HeapNode x, HeapNode y) {
         
         HeapNode xXHEAPNODEXx = H.Min;
         HeapNode xXSONXx;
+        HeapNode xXSONXx123;
         FibonacciHeap xXMONSTERXx = new FibonacciHeap();
-        
+        //System.out.println(H.numOfTree);
         arr[0] = H.Min.key;
         if(xXHEAPNODEXx.child != null) {
-            xXSONXx = H.Min.child;
+        	xXSONXx = H.Min.child;
+        	xXSONXx123 = xXSONXx;
             xXMONSTERXx.insert(xXSONXx.key, xXSONXx);
-            while(xXSONXx.next != xXSONXx) {
+            while(xXSONXx.next != xXSONXx123) {
             	xXSONXx = xXSONXx.next;
             	xXMONSTERXx.insert(xXSONXx.key, xXSONXx);
             }
         }
 
-        for (int i = 1; i<=k; i++) {
+        for (int i = 1; i<k; i++) {
         	HeapNode xXHEAPNODEXx1 = xXMONSTERXx.Min.godFather;
         	arr[i] = xXHEAPNODEXx1.key;
         	xXMONSTERXx.deleteMin();
-        	if(xXHEAPNODEXx1.child != null) {
-        		xXSONXx = xXHEAPNODEXx1.child;
+            if(xXHEAPNODEXx1.child != null) {
+            	xXSONXx = xXHEAPNODEXx1.child;
+            	xXSONXx123 = xXSONXx;
                 xXMONSTERXx.insert(xXSONXx.key, xXSONXx);
-                while(xXSONXx.next != xXSONXx) {
+                while(xXSONXx.next != xXSONXx123) {
                 	xXSONXx = xXSONXx.next;
                 	xXMONSTERXx.insert(xXSONXx.key, xXSONXx);
-                }        		
-        	}
+                }
+            }
         }
         
         return arr;
+
     }
+    
     
    /**
     * public class HeapNode
@@ -464,6 +499,7 @@ private void link(HeapNode x, HeapNode y) {
 		this(key);
 		this.godFather = godFather;
 	}
+	
 	public int getKey() {
 		return this.key;
 	}
@@ -472,70 +508,109 @@ private void link(HeapNode x, HeapNode y) {
 	}
     }
     public static void main(String[] arg) {
-    	FibonacciHeap.HeapNode [] j=new HeapNode[5];
-    	int r=1;
-    	FibonacciHeap.HeapNode y=null;
-    	for(int j1=0;j1<5;j1++) {
-    		j[j1]=null;
-    	}
+//    	FibonacciHeap.HeapNode [] j=new HeapNode[5];
+//    	int r=1;
+//    	FibonacciHeap.HeapNode y=null;
+//    	for(int j1=0;j1<5;j1++) {
+//    		j[j1]=null;
+//    	}
     	FibonacciHeap d= new FibonacciHeap();
-    	for(int i=1000;i>0;i--) {
-    		for(int j1=0;j1<5;j1++) {
-    			y=d.insert(i);
-    			i--;
-    			j[j1]=y;
-    			
-    		}
-    		System.out.println("min is:"+i);
-    		if(d.findMin().key!=i+1) {
-    			System.out.println("notTrue1");
-    			break;}
-    		d.decreaseKey(d.Min, 5);
-    		System.out.println(d.Min.key);
-    		if(d.findMin().key!=i-4) {
-    			System.out.println("notTrue2");
-    			break;}
-    		d.deleteMin();
-    		if(d.findMin().key!=i+2) {
-    			System.out.println("notTrue3");
-    			break;}
-//    		System.out.println(j[3].key);
-    		d.decreaseKey(j[3], 10);
-//    		System.out.println(j[3].key);
-    		if(d.findMin().key!=i-8) {
-    			System.out.println("notTrue4");
-    			break;}
-    		d.deleteMin();
-    		System.out.println(d.Min.key);
-    		if(d.findMin().key!=i+3) {
-    			System.out.println("notTrue5");
-    			break;}
-    		d.delete(j[1]);
-    		System.out.println(d.size);
-    		if(d.size!=2*r) {
-    			System.out.println("notTrue6");
-    			break;
-    		}
-    		r++;
-    	}
-    	System.out.println("welldone");
+//    	for(int i=1000;i>0;i--) {
+//    		for(int j1=0;j1<5;j1++) {
+//    			y=d.insert(i);
+//    			i--;
+//    			j[j1]=y;
+//    			
+//    		}
+//    		System.out.println("min is:"+i);
+//    		if(d.findMin().key!=i+1) {
+//    			System.out.println("notTrue1");
+//    			break;}
+//    		d.decreaseKey(d.Min, 5);
+//    		System.out.println(d.Min.key);
+//    		if(d.findMin().key!=i-4) {
+//    			System.out.println("notTrue2");
+//    			break;}
+//    		d.deleteMin();
+//    		if(d.findMin().key!=i+2) {
+//    			System.out.println("notTrue3");
+//    			break;}
+////    		System.out.println(j[3].key);
+//    		d.decreaseKey(j[3], 10);
+////    		System.out.println(j[3].key);
+//    		if(d.findMin().key!=i-8) {
+//    			System.out.println("notTrue4");
+//    			break;}
+//    		d.deleteMin();
+//    		System.out.println(d.Min.key);
+//    		if(d.findMin().key!=i+3) {
+//    			System.out.println("notTrue5");
+//    			break;}
+//    		d.delete(j[1]);
+//    		System.out.println(d.size);
+//    		if(d.size!=2*r) {
+//    			System.out.println("notTrue6");
+//    			break;
+//    		}
+//    		r++;
+//    	}
+//    	System.out.println("welldone");
+    	d.Q2();
+    	d.Q1();
 
 	}
-//    public void print(HeapNode y) {
-//    	System.out.println(y.key);
-//    	System.out.println();
-//    	System.out.println();
-//    	while(y.child!=null) {
-//    		HeapNode child =y.child;
-//    		System.out.print(child.key);
-//			System.out.print("     ");
-//			child=child.next;
-//    		while(child.equals(y.child)) {
-//    			System.out.print(child.key);
-//    			System.out.print("     ");
-//    		}
-//    		y=y.child;
-//    	}
-//    }
+    public void Q2() {
+    	int[] a=new int[3];
+    	a[0]=1000;
+    	a[1]=2000;
+    	a[2]=3000;
+    	for(int i=0;i<3;i++) {
+    		FibonacciHeap h =new FibonacciHeap();
+    		System.out.println("m="+a[i]);
+    		//System.out.println("to:"+FibonacciHeap.TotalLinks);
+    		for(int j=a[i];j>0;j--) {
+    			h.insert(j);
+    	}
+    		for (int j=0;j<a[i]/2;j++) {
+    			h.deleteMin();
+    		}
+    		System.out.println("totalLinks is:"+h.TotalLinks);
+    		System.out.println("totalCuts is:"+h.TotalCut);
+    		System.out.println("Potential is:"+h.potential());
+    	}
+    }
+    public void Q1() {
+    	int[] a=new int[3];
+    	a[0]=1024;
+    	a[1]=2048;
+    	a[2]=4096;
+    	for(int i=0;i<3;i++) {
+    		FibonacciHeap h =new FibonacciHeap();
+    		FibonacciHeap.HeapNode[] nodes=new HeapNode[a[i]+1];
+    		System.out.println("m="+a[i]);
+    		for(int j=a[i];j>0;j--) {
+    			nodes[j]=null;
+    	}
+    		for(int j=a[i];j>0;j--) {
+    			nodes[j]=h.insert(j);
+    	}
+    		FibonacciHeap.HeapNode y=h.findMin();
+    		h.deleteMin();
+    		int z=a[i];
+    		for (int j=0;j<Math.log(a[i])-2;j++) {
+    			int r= (int)(Math.random() * (nodes.length-1 ));
+    			while(nodes[r].equals(y)) {
+    				r= (int)(Math.random() * (nodes.length-1 ));
+    			}
+    			z=(int) (z+Math.pow(0.5, j));
+    			h.decreaseKey(nodes[r], z);
+    		}
+    		int r= (int)(Math.random() * (nodes.length-1 ));
+    		h.decreaseKey(nodes[r], a[i]-1);
+    		System.out.println("totalLinks is:"+h.TotalLinks);
+    		System.out.println("totalCuts is:"+h.TotalCut);
+    		System.out.println("Potential is:"+h.potential());
+    	}
+    }
 
 }
