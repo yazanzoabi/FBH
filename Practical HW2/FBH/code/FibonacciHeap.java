@@ -564,53 +564,65 @@ public class FibonacciHeap
     	a[0]=1000;
     	a[1]=2000;
     	a[2]=3000;
+    	
     	for(int i=0;i<3;i++) {
+    		long start = System.currentTimeMillis();
     		FibonacciHeap h =new FibonacciHeap();
+        	FibonacciHeap.TotalCut = 0;
+        	FibonacciHeap.TotalLinks = 0;
     		System.out.println("m="+a[i]);
     		//System.out.println("to:"+FibonacciHeap.TotalLinks);
-    		for(int j=a[i];j>0;j--) {
+    		for(int j = a[i]; j>0; j--) {
     			h.insert(j);
-    	}
+    		}
     		for (int j=0;j<a[i]/2;j++) {
     			h.deleteMin();
     		}
+    		long elapsedTimeMillis = System.currentTimeMillis() - start;
+    		System.out.println(" time: "+ elapsedTimeMillis);
     		System.out.println("totalLinks is:"+h.TotalLinks);
     		System.out.println("totalCuts is:"+h.TotalCut);
     		System.out.println("Potential is:"+h.potential());
     	}
     }
     public void Q1() {
-    	int[] a=new int[3];
-    	a[0]=1024;
-    	a[1]=2048;
-    	a[2]=4096;
-    	for(int i=0;i<3;i++) {
-    		FibonacciHeap h =new FibonacciHeap();
-    		FibonacciHeap.HeapNode[] nodes=new HeapNode[a[i]+1];
-    		System.out.println("m="+a[i]);
-    		for(int j=a[i];j>0;j--) {
-    			nodes[j]=null;
-    	}
-    		for(int j=a[i];j>0;j--) {
-    			nodes[j]=h.insert(j);
-    	}
-    		FibonacciHeap.HeapNode y=h.findMin();
-    		h.deleteMin();
-    		int z=a[i];
-    		for (int j=0;j<Math.log(a[i])-2;j++) {
-    			int r= (int)(Math.random() * (nodes.length-1 ));
-    			while(nodes[r].equals(y)) {
-    				r= (int)(Math.random() * (nodes.length-1 ));
-    			}
-    			z=(int) (z+Math.pow(0.5, j));
-    			h.decreaseKey(nodes[r], z);
-    		}
-    		int r= (int)(Math.random() * (nodes.length-1 ));
-    		h.decreaseKey(nodes[r], a[i]-1);
-    		System.out.println("totalLinks is:"+h.TotalLinks);
-    		System.out.println("totalCuts is:"+h.TotalCut);
-    		System.out.println("Potential is:"+h.potential());
-    	}
+    	FibonacciHeap h = new FibonacciHeap();
+    	FibonacciHeap.TotalCut = 0;
+    	FibonacciHeap.TotalLinks = 0;
+		long start = System.currentTimeMillis();
+		int max = (int)Math.pow(2,12);
+		HeapNode[] arr = new HeapNode[max+1];
+		
+		for(int i=max; i>=0; i--) {
+			arr[i]=h.insert(i);
+		}
+		h.deleteMin();
+
+		for(int i=0; i<=10; i++) {
+			// (2^10) --> 8
+			//(2^11) --> 9
+			// (2^12) --> 10
+					
+			double sum = 0;
+			for(int k = 1; k<=i; k++) {
+				sum += Math.pow(0.5, k);
+			}
+			System.out.println(sum);
+			System.out.println(max*sum+2);
+			h.decreaseKey(arr[(int)(max*sum+2)], max+1);
+		}
+		
+		h.decreaseKey(arr[max-1], max+1);
+		
+		long elapsedTimeMillis = System.currentTimeMillis() - start;
+
+		//System.out.println(h.getStart().getPrev().getChild());
+		//System.out.println(start);
+		System.out.println(" time: "+ elapsedTimeMillis);
+		System.out.println(" links: " + totalLinks());
+		System.out.println(" cuts: "+totalCuts());
+		System.out.println(" potential: "+ h.potential());
+		System.out.println(" number of marked: " + h.numOfMarked);
     }
 
 }
