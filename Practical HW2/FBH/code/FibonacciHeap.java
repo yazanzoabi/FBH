@@ -1,4 +1,7 @@
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * FibonacciHeap
@@ -40,6 +43,7 @@ public class FibonacciHeap
     	numOfTree++;
     	size++;
     	HeapNode newNode=new HeapNode(key);
+    	// if heap is not empty.
         if(First != null ) {
         	newNode.next = First;
         	newNode.prev = First.prev;
@@ -51,6 +55,7 @@ public class FibonacciHeap
             }
             return newNode;
         }
+        // if heap is empty.
         else {
         	Min= newNode;
         	First= newNode;
@@ -96,20 +101,25 @@ public class FibonacciHeap
     */
     public void deleteMin()
     {
+    	// heap is empty
     	if(Min==null)
     		return;
+    	
     	size--;
     	numOfTree--;
-    	
+    	// if heap is exist one node only. 
     	if (size==0) {
     		Min=null;
     		First=null;
         	return;
     	}
-    	
+    	// there are more than one node in heap
+    	// node of Min have children added 
+    	//each one of him to the heap as trees. 
     	if(Min.child!=null) {
     		HeapNode firstChild = Min.child;
     		HeapNode temp = firstChild;
+    		
     		do {
             	numOfTree++;
     			if (temp.mark==1) {
@@ -123,6 +133,7 @@ public class FibonacciHeap
     		while(!temp.equals(firstChild)); 
     		First=firstChild;
     		temp=temp.prev;
+    		// if Min has one child.
     		if(!Min.next.equals(Min)) {
     			Min.prev.next=firstChild;
     			firstChild.prev=Min.prev;
@@ -153,7 +164,7 @@ public class FibonacciHeap
 
    private void Consolidating() {
 	   HeapNode[] array = new HeapNode[size+1];    
-	   HeapNode x = First.next;
+	   HeapNode x = First;
 	   int numTree=numOfTree;
     
 	   while(numTree>0) {
@@ -212,10 +223,11 @@ public class FibonacciHeap
 			y.prev=y;
 		}
 		else {
-			y.next=x.child.next;
-			x.child.next=y;
-			y.prev=x.child;
-			y.next.prev=y;
+			y.next=x.child;
+			x.child.prev.next=y;
+			y.prev=x.child.prev;
+			x.child.prev=y;
+			
 		}
 		
 		x.child=y;
@@ -438,7 +450,6 @@ public class FibonacciHeap
         HeapNode xXSONXx;
         HeapNode xXSONXx123;
         FibonacciHeap xXMONSTERXx = new FibonacciHeap();
-        //System.out.println(H.numOfTree);
         arr[0] = H.Min.key;
         if(xXHEAPNODEXx.child != null) {
         	xXSONXx = H.Min.child;
@@ -451,6 +462,7 @@ public class FibonacciHeap
         }
 
         for (int i = 1; i<k; i++) {
+        	//FibonacciHeap.Print(xXMONSTERXx);
         	HeapNode xXHEAPNODEXx1 = xXMONSTERXx.Min.godFather;
         	arr[i] = xXHEAPNODEXx1.key;
         	xXMONSTERXx.deleteMin();
@@ -514,7 +526,7 @@ public class FibonacciHeap
 //    	for(int j1=0;j1<5;j1++) {
 //    		j[j1]=null;
 //    	}
-    	FibonacciHeap d= new FibonacciHeap();
+//    	FibonacciHeap d= new FibonacciHeap();
 //    	for(int i=1000;i>0;i--) {
 //    		for(int j1=0;j1<5;j1++) {
 //    			y=d.insert(i);
@@ -555,11 +567,13 @@ public class FibonacciHeap
 //    		r++;
 //    	}
 //    	System.out.println("welldone");
-    	d.Q2();
-    	d.Q1();
+    	
+//    	FibonacciHeap.Q2();
+    	FibonacciHeap.Q1();
 
 	}
-    public void Q2() {
+    public static void Q2() {
+    	System.out.println("********Q2************");
     	int[] a=new int[3];
     	a[0]=1000;
     	a[1]=2000;
@@ -583,22 +597,27 @@ public class FibonacciHeap
     		System.out.println("totalLinks is:"+h.TotalLinks);
     		System.out.println("totalCuts is:"+h.TotalCut);
     		System.out.println("Potential is:"+h.potential());
+    		FibonacciHeap.Print(h);
     	}
     }
-    public void Q1() {
+    public static void Q1() {
+    	System.out.println("********Q1************");
     	FibonacciHeap h = new FibonacciHeap();
     	FibonacciHeap.TotalCut = 0;
     	FibonacciHeap.TotalLinks = 0;
 		long start = System.currentTimeMillis();
-		int max = (int)Math.pow(2,12);
+//		int [] a=new int [3];
+		int max = (int)Math.pow(2,10);
 		HeapNode[] arr = new HeapNode[max+1];
 		
 		for(int i=max; i>=0; i--) {
 			arr[i]=h.insert(i);
 		}
+//		FibonacciHeap.Print(h);
 		h.deleteMin();
+//		FibonacciHeap.Print(h);
 
-		for(int i=0; i<=10; i++) {
+		for(int i=0; i<=8; i++) {
 			// (2^10) --> 8
 			//(2^11) --> 9
 			// (2^12) --> 10
@@ -607,8 +626,9 @@ public class FibonacciHeap
 			for(int k = 1; k<=i; k++) {
 				sum += Math.pow(0.5, k);
 			}
-			System.out.println(sum);
-			System.out.println(max*sum+2);
+			
+			//System.out.println(sum);
+			//System.out.println(max*sum+2);
 			h.decreaseKey(arr[(int)(max*sum+2)], max+1);
 		}
 		
@@ -623,6 +643,96 @@ public class FibonacciHeap
 		System.out.println(" cuts: "+totalCuts());
 		System.out.println(" potential: "+ h.potential());
 		System.out.println(" number of marked: " + h.numOfMarked);
+//		FibonacciHeap.Print(h);
     }
+
+    public static void Print(FibonacciHeap heap) {
+		HashMap<Integer, Integer> spacesBeforeKey = new HashMap<>();
+		if (!heap.isEmpty()) {
+			assignSpaces(heap.First, spacesBeforeKey, 0);
+			List<FibonacciHeap.HeapNode> nodesQueue = new ArrayList<>();
+			FibonacciHeap.HeapNode currNode = heap.First;
+			do {
+				nodesQueue.add(currNode);
+				currNode = currNode.next;
+			} while (currNode != heap.First);
+
+			int depth = 0;
+			while (!nodesQueue.isEmpty()) {
+				List<FibonacciHeap.HeapNode> children = new ArrayList<>();
+				StringBuilder builderTop = new StringBuilder();
+				StringBuilder builderConnectors = new StringBuilder();
+				StringBuilder builderKeys = new StringBuilder();
+
+				int spaces = 0;
+				int spacesConnectorLine = 0;
+				for (FibonacciHeap.HeapNode node : nodesQueue) {
+					boolean firstChild = false;
+					if (depth > 0) {
+						firstChild = node == node.Parent.child;
+						int spacesBefore = spacesBeforeKey.get(node.getKey());
+						if (firstChild) {
+							addSpaces(builderTop, spacesBefore - spacesConnectorLine, ' ');
+							FibonacciHeap.HeapNode lastChild = node.Parent;
+							int lastChildSpacesBefore = spacesBeforeKey.get(lastChild.getKey());
+							builderTop.append("|");
+
+							if (lastChildSpacesBefore - spacesBefore - 1 > 0) {
+								addSpaces(builderTop, lastChildSpacesBefore - spacesBefore - 1, '_');
+								builderTop.append(" ");
+							}
+						}
+						addSpaces(builderConnectors, spacesBefore - spacesConnectorLine, ' ');
+						spacesConnectorLine = spacesBefore + 1;
+						builderConnectors.append("|");
+					}
+
+					int spacesBefore = spacesBeforeKey.get(node.getKey());
+					char spaceChar = firstChild ? ' ' : '-';
+					addSpaces(builderKeys, spacesBefore - spaces, spaceChar);
+					spaces = spacesBefore + (int) (Math.log10(node.getKey()) + 1);
+					builderKeys.append(node.getKey());
+
+					FibonacciHeap.HeapNode child = node.child;
+					if (child != null) {
+						do {
+							children.add(child);
+							child = child.next;
+						} while (child != node.child);
+					}
+				}
+				System.out.println(builderTop);
+				System.out.println(builderConnectors);
+				System.out.println(builderKeys);
+				depth++;
+				nodesQueue = children;
+			}
+		}
+	}
+
+	private static void addSpaces(StringBuilder sb, int amount, char c) {
+		for (int i = 0; i < amount; i++) {
+			sb.append(c);
+		}
+	}
+
+	private static int assignSpaces(FibonacciHeap.HeapNode node, HashMap<Integer, Integer> spacesBeforeKey, int spacesBefore) {
+		int spaces = 0;
+		if (node != null) {
+			FibonacciHeap.HeapNode currNode = node;
+			do {
+				spacesBeforeKey.put(currNode.getKey(), spacesBefore + spaces);
+				if (currNode.child != null) {
+					spaces += assignSpaces(currNode.child, spacesBeforeKey, spacesBefore + spaces);
+				} else {
+					int digitsNum = (int) (Math.log10(currNode.getKey()) + 1);
+					spaces += digitsNum + 1;
+				}
+				currNode = currNode.next;
+			} while (currNode != node);
+		}
+		return spaces;
+	}
+
 
 }
